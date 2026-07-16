@@ -64,6 +64,12 @@ exit
 
 El proyecto requiere openssl para la generación de la PKI y la ofuscación de certificados. El proceso de hardening mediante el script incluido en `tools/` es obligatorio para asegurar la integridad de la CA en el agente.
 
+![](img/screenshot_2026-07-16-023052.png)
+![](img/screenshot_2026-07-16-023142.png)
+![](img/screenshot_2026-07-16-023230.png)
+![](img/screenshot_2026-07-16-023356.png)
+![](img/screenshot_2026-07-16-023525.png)
+![](img/screenshot_2026-07-16-023714.png)
 
 
 ## Uso
