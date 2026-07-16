@@ -175,6 +175,7 @@ Horizon-C2 continúa en desarrollo.
 
 Actualmente se encuentran en progreso las siguientes capacidades:
 
+- Perfil Maleable-C2
 - BOF Loader
 - Execute Assembly
 - Mejoras del protocolo
