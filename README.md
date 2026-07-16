@@ -1,3 +1,4 @@
+
 <div align="center">
 
 # ◢ H O R I Z O N . C 2 ◣
@@ -8,63 +9,181 @@
 ![Red Team](https://img.shields.io/badge/Red_Team-red?style=for-the-badge)
 
 **Command & Control Framework**
-___
+
 </div>
 
-## Resumen
+---
 
-Horizon-C2 es un framework experimental de Comando y Control (C2) diseñado para operaciones de Red Team que demandan un control preciso de la huella en memoria.
+# Resumen
 
+**Horizon-C2** es un framework Command & Control (C2) desarrollado con fines de investigación, aprendizaje y profundización en arquitecturas utilizadas durante operaciones de Red Team.
 
-## Ingeniería de Comunicación
+El objetivo del proyecto es comprender el funcionamiento interno de un framework C2 moderno implementando cada uno de sus componentes, desde el Team Server hasta el Beacon, incluyendo el diseño del protocolo de comunicación, la gestión de sesiones, la interacción con Windows mediante WinAPI y la construcción de una interfaz para el operador.
 
-- **Protocolo Binario Minimalista**: Eliminación de serializaciones de alto nivel como JSON o Protobuf. La transmisión de comandos opera bajo un protocolo binario directo, reduciendo drásticamente la firma estática en tráfico de red.
+El código fuente **no se publica**. Este repositorio documenta la arquitectura, las decisiones de diseño y la evolución técnica del proyecto.
 
-- **Transporte TLS Evasivo**: Implementación sobre `rustls` con inhabilitación del almacén de certificados del sistema. La integridad se garantiza mediante SSL Pinning con certificados ofuscados en tiempo de compilación, invalidando técnicas estándar de inspección MITM.
+---
 
-- **Validación Criptográfica Estricta**: Implementación de wrappers personalizados que permiten la operación mediante IP cruda, omitiendo los campos SAN (Subject Alternative Names) sin sacrificar la validación de la cadena de confianza.
+# Objetivos del proyecto
 
-## Interfaz del Operador
+- Comprender la arquitectura interna de un framework C2.
+- Diseñar un protocolo de comunicación propio.
+- Desarrollar un Team Server modular.
+- Construir un Beacon ligero para Windows.
+- Profundizar en el uso de WinAPI desde Rust.
+- Aplicar criterios de OPSEC durante el desarrollo.
 
-El Team-Server emplea una arquitectura modular concurrente. Su diseño permite el despliegue dinámico de comandos y la gestión de múltiples agentes con una latencia mínima, priorizando la estabilidad del canal de mando en entornos de operaciones prolongadas.
+---
 
+# Arquitectura
 
-## Capacidades Operativas (OPSEC)
-
-- **Comandos Nativos**: Integración directa con APIs de Windows. El framework evita la invocación de intérpretes de comandos (`cmd.exe` / `powershell.exe`), minimizando la telemetría de procesos sospechosos.
-
-- **Estabilidad en Memoria**: Agente desarrollado íntegramente en Rust. Su arquitectura síncrona, libre de runtimes complejos (Tokio), asegura una huella de memoria mínima y predecible bajo condiciones de latencia variable.
-
-- **PPID Spoofing**: Implementación de suplantación de ID de Proceso Padre para evadir detecciones basadas en parentesco, optimizada para la resiliencia en sistemas Windows modernos.
-> **Nota**: Durante el desarrollo, se documentó que Windows 11 mitiga agresivamente el PPID Spoofing a nivel de kernel para ciertos procesos (ej. cmd.exe), revirtiendo silenciosamente el padre a `explorer.exe`. El framework evita esto apuntando el ppid directamente a `explorer.exe`.
-
-## Comandos internos del agente
 ```
-whoami
-env
-pwd 
-ls
-cd
-mv
-cp
-rm
-mkdir
-download
-upload
-netstat
-ps
-ppid
-run
-kill
-exit
+                    Operador
+                        │
+                        │
+                Interfaz (BubbleTea)
+                        │
+                        ▼
+               Team Server (Go)
+      ┌────────────────────────────────┐
+      │ Gestión de sesiones            │
+      │ Dispatcher de comandos         │
+      │ Protocolo Horizon              │
+      │ Parser de respuestas           │
+      └────────────────────────────────┘
+                        │
+                HTTPS + TLS
+                        │
+                        ▼
+                Beacon (Rust)
+      ┌────────────────────────────────┐
+      │ Dispatcher                     │
+      │ WinAPI                         │
+      │ Sistema de archivos            │
+      │ Procesos                       │
+      │ Networking                     │
+      │ Output Queue                   │
+      └────────────────────────────────┘
 ```
 
+---
 
-## Notas de Implementación
+# Filosofía de diseño
 
-El proyecto requiere openssl para la generación de la PKI y la ofuscación de certificados. El proceso de hardening mediante el script incluido en `tools/` es obligatorio para asegurar la integridad de la CA en el agente.
+Horizon-C2 fue desarrollado siguiendo una idea sencilla:
 
-## Capturas
+> **Mantener el Beacon pequeño y concentrar la mayor parte de la lógica en el Team Server.**
+
+El agente únicamente mantiene el canal de comunicación, ejecuta tareas y devuelve resultados utilizando un protocolo binario propio.
+
+El Team Server es responsable de la coordinación de sesiones, el despacho de comandos y la representación de la información para el operador.
+
+Esta separación permitió mantener el Beacon simple, modular y fácil de extender.
+
+---
+
+# Decisiones de diseño
+
+## Arquitectura modular
+
+El proyecto evolucionó desde un prototipo inicial con un Team Server monolítico hacia una arquitectura modular donde cada componente posee una responsabilidad claramente definida.
+
+Actualmente el proyecto separa la lógica de:
+
+- Red
+- Gestión de Beacons
+- Procesamiento de comandos
+- Interfaz del operador
+- Estado global
+
+Esta organización facilitó la incorporación de nuevas capacidades sin incrementar el acoplamiento entre módulos.
+
+---
+
+## Protocolo binario
+
+Horizon-C2 utiliza un protocolo binario propio para el intercambio de tareas y resultados.
+
+Los comandos son representados mediante identificadores numéricos y los resultados son serializados utilizando estructuras simples adaptadas a cada tipo de información.
+
+El objetivo fue mantener un protocolo pequeño, sencillo de interpretar y fácilmente extensible.
+
+---
+
+## Beacon ligero
+
+Uno de los principales objetivos del proyecto fue reducir la huella del agente.
+
+Durante el desarrollo se revisaron dependencias, arquitectura y proceso de compilación hasta reducir progresivamente el tamaño del Beacon desde los primeros prototipos (~3.9 MiB) hasta aproximadamente **500 KiB** en la versión actual.
+
+---
+
+## Comunicación
+
+La comunicación entre el Beacon y el Team Server utiliza HTTPS sobre TLS.
+
+La conexión implementa validación mediante una CA embebida en el agente durante el proceso de compilación, evitando depender del almacén de certificados del sistema.
+
+---
+
+## WinAPI
+
+Las capacidades del Beacon fueron implementadas utilizando directamente WinAPI siempre que fue posible, evitando depender de intérpretes como `cmd.exe` o `powershell.exe` para tareas básicas del sistema.
+
+---
+
+# Capacidades actuales
+
+### Gestión
+
+- Múltiples sesiones
+- Gestión interactiva de Beacons
+- Selección de sesión activa
+- Cola de tareas por Beacon
+
+### Sistema
+
+- Enumeración de procesos
+- Terminación de procesos
+- Variables de entorno
+- Información del usuario
+
+### Sistema de archivos
+
+- Navegación
+- Copia
+- Movimiento
+- Eliminación
+- Descarga
+- Carga de archivos
+
+### Networking
+
+- Enumeración de conexiones TCP
+
+### Configuración
+
+- Sleep dinámico
+- PPID configurable
+- SpawnTo configurable
+
+---
+
+# Estado del proyecto
+
+Horizon-C2 continúa en desarrollo.
+
+Actualmente se encuentran en progreso las siguientes capacidades:
+
+- BOF Loader
+- Execute Assembly
+- Mejoras del protocolo
+- Nuevos módulos internos
+- Hardening del Beacon
+
+---
+
+# Capturas
 
 ![](img/screenshot_2026-07-16-023052.png)
 ![](img/screenshot_2026-07-16-023142.png)
@@ -74,19 +193,30 @@ El proyecto requiere openssl para la generación de la PKI y la ofuscación de c
 ![](img/screenshot_2026-07-16-023714.png)
 
 
+---
 
+# Disponibilidad del código
 
+El código fuente no se publica en este repositorio.
 
-## ⚠️ Descargo de Responsabilidad
+Horizon-C2 fue desarrollado como un proyecto personal de investigación y como parte de mi portafolio profesional orientado a Red Team.
 
-Esta herramienta ha sido desarrollada para fines de investigación en seguridad.
+Debido a la naturaleza del proyecto y al riesgo asociado con la distribución de este tipo de herramientas, este repositorio se limita a documentar su arquitectura, evolución y principales decisiones de diseño.
 
-El autor no se hace responsable del uso indebido de esta herramienta ni de las consecuencias derivadas de su utilización. 
+---
 
-> **Nota**: El proyecto puede incluir comentarios en su código fuente que podrían influir en la detección del binario resultante por parte de determinados sistemas de seguridad.
+# Descargo de responsabilidad
+
+Este proyecto fue desarrollado exclusivamente con fines educativos, investigación en seguridad ofensiva y demostración de capacidades técnicas.
+
+El autor no se responsabiliza por el uso indebido de la información presentada en este repositorio.
+
+---
 
 <div align="center">
-Aukan  |  CRTO Certified
+
+**Aukan**
+
+CRTO — Certified Red Team Operator
+
 </div>
-
-
