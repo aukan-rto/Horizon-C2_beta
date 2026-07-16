@@ -64,6 +64,8 @@ exit
 
 El proyecto requiere openssl para la generación de la PKI y la ofuscación de certificados. El proceso de hardening mediante el script incluido en `tools/` es obligatorio para asegurar la integridad de la CA en el agente.
 
+## Capturas
+
 ![](img/screenshot_2026-07-16-023052.png)
 ![](img/screenshot_2026-07-16-023142.png)
 ![](img/screenshot_2026-07-16-023230.png)
@@ -72,59 +74,7 @@ El proyecto requiere openssl para la generación de la PKI y la ofuscación de c
 ![](img/screenshot_2026-07-16-023714.png)
 
 
-## Uso
 
-Linux
-```
-sudo apt install llvm clang
-cargo install cargo-xwin
-rustup target add x86_64-pc-windows-msvc
-
-```
-
-1. Preparación de Certificados
-
-El Agente utiliza SSL Pinning, por lo que necesita conocer de antemano el certificado del Team-Server.
-```bash
-# Generar par de llaves TLS para el C2
-openssl req -x509 -newkey rsa:4096 -keyout team-server/cert/private.key -out team-server/cert/certificate.crt -days 365 -nodes
-```
-2. Ofuscación del Certificado
-
-El Agente no confía en el certificado en texto claro, necesita que esté ofuscado en el código fuente. Ejecutar el script Python incluido en `tools/` pasándole el certificado generado anteriormente:
-```bash
-python3 tools/encodex_DER.py team-server/cert/certificate.crt
-```
-Esto imprimirá en la terminal el arreglo de bytes `ENCRYPTED_CA` y la llave `CA_XOR_KEY`. Debes copiarlas y  pegarlas directamente en el archivo `beacon/src/core/profile.rs`, reemplazando las que están por defecto.
-
-3. Compilar el Team Server
-
-Ingresar al directorio del servidor y compilar el binario de Go
-```bash
-cd team-server
-go build main.go -o horizon-teamserver
-```
-
-4. Compilar el Beacon
-
-Compilar el agente en Rust para Windows x64. (Asegúrate de tener el target `x86_64-pc-windows-gnu` instalado en tu `Rustup`)
-```bash
-cd beacon
-cargo xwin build --release --target x86_64-pc-windows-msvc
-```
-El binario final ofuscado estará en: `beacon/target/x86_64-pc-windows-msvc/release/horizon-beacon.exe`.
-
-5. Ejecución
-
-Iniciar el Team Server en tu máquina atacante:
-```bash
-sudo ./horizon-teamserver
-```
-
-En el equipo víctima (Windows), ejecutar el beacon pasando la dirección del servidor como argumento:
-```powershell
-.\horizon-beacon.exe
-```
 
 
 ## ⚠️ Descargo de Responsabilidad
