@@ -1,3 +1,4 @@
+<div align="center">
 
 # ◢ H O R I Z O N . C 2 ◣
 
