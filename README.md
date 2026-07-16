@@ -82,7 +82,7 @@ El agente únicamente mantiene el canal de comunicación, ejecuta tareas y devue
 
 El Team Server es responsable de la coordinación de sesiones, el despacho de comandos y la representación de la información para el operador.
 
-Esta separación permitió mantener el Beacon simple, modular y fácil de extender.
+Esta separación permite mantener el Beacon simple, modular y fácil de extender.
 
 ---
 
@@ -108,7 +108,7 @@ Esta organización facilitó la incorporación de nuevas capacidades sin increme
 
 Horizon-C2 utiliza un protocolo binario propio para el intercambio de tareas y resultados.
 
-Los comandos son representados mediante identificadores numéricos y los resultados son serializados utilizando estructuras simples adaptadas a cada tipo de información.
+Los comandos son representados mediante identificadores y los resultados son serializados utilizando estructuras simples adaptadas a cada tipo de información.
 
 El objetivo fue mantener un protocolo pequeño, sencillo de interpretar y fácilmente extensible.
 
@@ -169,7 +169,6 @@ Las capacidades del Beacon fueron implementadas utilizando directamente WinAPI s
 
 - Sleep dinámico
 - PPID configurable
-- SpawnTo configurable
 
 ---
 
