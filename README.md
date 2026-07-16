@@ -215,8 +215,6 @@ El autor no se responsabiliza por el uso indebido de la información presentada 
 
 <div align="center">
 
-**Aukan**
-
-CRTO — Certified Red Team Operator
+**Aukan** | CRTO Certified
 
 </div>
