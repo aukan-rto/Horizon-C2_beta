@@ -199,8 +199,6 @@ Actualmente se encuentran en progreso las siguientes capacidades:
 
 El código fuente no se publica en este repositorio.
 
-Horizon-C2 fue desarrollado como un proyecto personal de investigación y como parte de mi portafolio profesional orientado a Red Team.
-
 Debido a la naturaleza del proyecto y al riesgo asociado con la distribución de este tipo de herramientas, este repositorio se limita a documentar su arquitectura, evolución y principales decisiones de diseño.
 
 ---
