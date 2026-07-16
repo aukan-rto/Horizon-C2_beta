@@ -38,32 +38,36 @@ El código fuente **no se publica**. Este repositorio documenta la arquitectura,
 # Arquitectura
 
 ```
-                    Operador
-                        │
-                        │
-                Interfaz (BubbleTea)
-                        │
-                        ▼
-               Team Server (Go)
-      ┌────────────────────────────────┐
-      │ Gestión de sesiones            │
-      │ Dispatcher de comandos         │
-      │ Protocolo Horizon              │
-      │ Parser de respuestas           │
-      └────────────────────────────────┘
-                        │
-                HTTPS + TLS
-                        │
-                        ▼
-                Beacon (Rust)
-      ┌────────────────────────────────┐
-      │ Dispatcher                     │
-      │ WinAPI                         │
-      │ Sistema de archivos            │
-      │ Procesos                       │
-      │ Networking                     │
-      │ Output Queue                   │
-      └────────────────────────────────┘
+                   Operador
+                       ▼
+                  Interfaz UI
+                       │
+                       ▼
+        ┌────────────────────────────────┐
+        │        Team Server (Go)        │
+        ├────────────────────────────────┤
+        │ Gestión de sesiones            │
+        │ Dispatcher de comandos         │
+        │ Protocolo Horizon              │
+        │ Parser de respuestas           │
+        └────────────────────────────────┘
+                       │
+                 HTTPS + TLS
+                       │
+                       ▼
+        ┌────────────────────────────────┐
+        │        Beacon (Rust)           │
+        ├────────────────────────────────┤
+        │                                │
+        │  Beacon Context                │
+        │  Dispatcher                    │
+        │  Output Queue                  │
+        │   ├── Filesystem               │
+        │   ├── Processes                │
+        │   ├── Networking               │
+        │   └── Configuration            │
+        │                                │
+        └────────────────────────────────┘
 ```
 
 ---
