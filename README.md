@@ -16,7 +16,7 @@
 
 # Resumen
 
-**Horizon-C2** es un framework Command & Control (C2) desarrollado con fines de investigación, aprendizaje y profundización en arquitecturas utilizadas durante operaciones de Red Team.
+**Horizon-C2** es un framework Command & Control (C2) desarrollado con fines de investigación y aprendizaje para profundizar en arquitecturas empleadas durante operaciones de Red Team.
 
 El objetivo del proyecto es comprender el funcionamiento interno de un framework C2 moderno implementando cada uno de sus componentes, desde el Team Server hasta el Beacon, incluyendo el diseño del protocolo de comunicación, la gestión de sesiones, la interacción con Windows mediante WinAPI y la construcción de una interfaz para el operador.
 
@@ -69,6 +69,7 @@ El código fuente **no se publica**. Este repositorio documenta la arquitectura,
         │                                │
         └────────────────────────────────┘
 ```
+
 
 ---
 
